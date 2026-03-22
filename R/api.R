@@ -64,8 +64,10 @@ pdc_get <- function(path, ...) {
 }
 
 #' Realiza uma requisição GET à API e retorna JSON como lista R
+#' @param simplify Se TRUE (padrão), simplifica vetores JSON para vetores R.
+#'   Use FALSE para preservar a estrutura aninhada completa.
 #' @keywords internal
-pdc_get_json <- function(path, ...) {
+pdc_get_json <- function(path, ..., simplify = TRUE) {
   params <- list(...)
   params <- Filter(Negate(is.null), params)
 
@@ -84,5 +86,5 @@ pdc_get_json <- function(path, ...) {
     stop(paste("Erro na API:", status), call. = FALSE)
   }
 
-  httr2::resp_body_json(resp, simplifyVector = TRUE)
+  httr2::resp_body_json(resp, simplifyVector = simplify)
 }

@@ -13,7 +13,9 @@
 #' pdc_discovery()
 #' }
 pdc_discovery <- function() {
-  resp <- pdc_get_json("noauth/indicadores/discovery")
+  # simplify = FALSE preserva a estrutura aninhada: lista de indicadores,
+  # cada um com uma lista de cargos — sem colapsar para data.frame
+  resp <- pdc_get_json("noauth/indicadores/discovery", simplify = FALSE)
 
   if (!isTRUE(resp$success)) {
     stop("Erro ao consultar indicadores disponíveis.", call. = FALSE)
@@ -21,26 +23,31 @@ pdc_discovery <- function() {
 
   # Achata a lista aninhada (indicador -> cargos) em um data.frame plano
   resultado <- do.call(rbind, lapply(resp$data, function(ind) {
-    if (length(ind$cargos) == 0) {
+    cargos <- ind$cargos
+
+    if (is.null(cargos) || length(cargos) == 0) {
       return(data.frame(
-        id               = ind$id,
-        nome             = ind$nome,
-        grupo            = ind$grupo,
-        cargo_id         = NA_integer_,
-        cargo_nome       = NA_character_,
+        id                 = as.character(ind$id),
+        nome               = as.character(ind$nome),
+        grupo              = as.character(ind$grupo),
+        cargo_id           = NA_integer_,
+        cargo_nome         = NA_character_,
         filtros_requeridos = NA_character_,
-        stringsAsFactors = FALSE
+        stringsAsFactors   = FALSE
       ))
     }
 
-    do.call(rbind, lapply(ind$cargos, function(cargo) {
-      filtros <- paste(cargo$filtros_requeridos %||% character(0), collapse = ", ")
+    do.call(rbind, lapply(cargos, function(cargo) {
+      filtros <- paste(
+        unlist(cargo$filtros_requeridos %||% list()),
+        collapse = ", "
+      )
       data.frame(
-        id                 = ind$id,
-        nome               = ind$nome,
-        grupo              = ind$grupo,
-        cargo_id           = cargo$id,
-        cargo_nome         = cargo$nome,
+        id                 = as.character(ind$id),
+        nome               = as.character(ind$nome),
+        grupo              = as.character(ind$grupo),
+        cargo_id           = as.integer(cargo$id),
+        cargo_nome         = as.character(cargo$nome),
         filtros_requeridos = filtros,
         stringsAsFactors   = FALSE
       )
