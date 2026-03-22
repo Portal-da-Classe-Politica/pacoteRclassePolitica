@@ -13,7 +13,7 @@ pdc_api_url <- function() {
     "pacoteRclassePolitica.api_url",
     default = Sys.getenv(
       "PACOTECLASSEPOLITICA_API_URL",
-      unset = "https://api.portaldaclasse.com.br"
+      unset = "http://redem.c3sl.ufpr.br/v1/api/"
     )
   )
 }
