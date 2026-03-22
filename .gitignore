@@ -1,0 +1,28 @@
+# Arquivos gerados / cache
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# Documentação gerada pelo roxygen2
+NAMESPACE
+man/*.Rd
+
+# Pacote compilado
+*.tar.gz
+*.zip
+
+# Outputs de build
+/doc/
+/Meta/
+
+# pkgdown site
+/docs/
+
+# Cache de testes (httptest2)
+tests/testthat/api.portaldaclasse.com.br/
+
+# Variáveis de ambiente locais
+.env
+.Renviron

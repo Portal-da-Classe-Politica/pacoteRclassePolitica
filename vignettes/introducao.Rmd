@@ -1,0 +1,180 @@
+---
+title: "Introdução ao portalclasse"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introdução ao portalclasse}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+## Instalação
+
+```{r}
+# Via r-universe (recomendado)
+install.packages("pacoteRclassePolitica", repos = c(
+  "https://portal-da-classe-politica.r-universe.dev",
+  "https://cloud.r-project.org"
+))
+
+# Ou diretamente do GitHub (requer o pacote remotes)
+remotes::install_github("Portal-da-Classe-Politica/pacoteRclassePolitica")
+```
+
+## Configuração
+
+Por padrão, o pacote aponta para a API de produção. Para apontar para um
+ambiente diferente (ex: desenvolvimento local):
+
+```{r}
+options(pacoteRclassePolitica.api_url = "http://redem.c3sl.ufpr.br/v1/api/")
+
+# Ou via variável de ambiente (coloque no .Renviron)
+# PACOTECLASSEPOLITICA_API_URL=http://redem.c3sl.ufpr.br/v1/api/
+```
+
+## Descobrindo os indicadores disponíveis
+
+Antes de consultar, você pode explorar quais indicadores e cargos estão disponíveis:
+
+```{r}
+library(pacoteRclassePolitica)
+
+# Lista todos os indicadores e cargos válidos
+pdc_discovery()
+
+# Lista os cargos aceitos pelas funções
+pdc_listar_cargos()
+```
+
+## Exemplos de uso
+
+### Número Efetivo de Partidos (NEPP)
+
+```{r}
+# NEPP na Câmara dos Deputados, 1998-2022
+nepp <- get_nepp("deputado_federal", 1998, 2022)
+nepp
+```
+
+```{r}
+# Visualizar com ggplot2
+library(ggplot2)
+
+ggplot(nepp, aes(x = ano, y = nepp)) +
+  geom_line(color = "#2c7bb6", linewidth = 1) +
+  geom_point(color = "#2c7bb6", size = 2) +
+  labs(
+    title = "Número Efetivo de Partidos — Câmara dos Deputados",
+    subtitle = "1998–2022",
+    x = "Ano", y = "NEPP",
+    caption = "Fonte: Portal da Classe Política — INCT ReDem"
+  ) +
+  theme_minimal()
+```
+
+### Índice de Volatilidade Eleitoral (Pedersen)
+
+```{r}
+# Volatilidade nas eleições para a Câmara Federal
+volatilidade <- get_volatilidade_eleitoral("deputado_federal", 1998, 2022)
+
+# Volatilidade para Presidente (eleições nacionais)
+volatilidade_pres <- get_volatilidade_eleitoral("presidente", 1994, 2022)
+```
+
+### Taxa de Renovação e Taxa de Reeleição
+
+```{r}
+# Taxa de renovação de deputados federais
+renovacao <- get_taxa_renovacao("deputado_federal", 1998, 2022)
+
+# Taxa de reeleição de vereadores em São Paulo
+reeleicao_sp <- get_taxa_reeleicao("vereador", 2000, 2024, uf = "SP")
+
+# Comparar renovação x reeleição com dplyr
+library(dplyr)
+
+renovacao |>
+  rename(taxa = taxa_renovacao_liquida) |>
+  mutate(indicador = "Renovação") |>
+  bind_rows(
+    reeleicao_sp |>
+      rename(taxa = taxa_reeleicao) |>
+      mutate(indicador = "Reeleição — Vereadores SP")
+  )
+```
+
+### Índice de Concentração de Patrimônio
+
+```{r}
+# Concentração de patrimônio de vereadores brasileiros, 2000-2024
+patrimonio_vereadores <- get_concentracao_patrimonio("vereador", 2000, 2024)
+
+# Filtrado por estado
+patrimonio_sp <- get_concentracao_patrimonio("vereador", 2000, 2024, uf = "SP")
+
+# Filtrado por município
+patrimonio_bh <- get_concentracao_patrimonio(
+  "vereador", 2000, 2024,
+  uf = "MG", municipio = "Belo Horizonte"
+)
+```
+
+### Índice de Desigualdade de Acesso a Recursos
+
+```{r}
+# Desigualdade de financiamento na Câmara Federal
+recursos_federal <- get_desigualdade_recursos("deputado_federal", 2006, 2022)
+
+# Comparando dois cargos
+recursos_vereador <- get_desigualdade_recursos("vereador", 2008, 2024, uf = "SP")
+
+library(tidyr)
+library(ggplot2)
+
+bind_rows(
+  recursos_federal |> mutate(cargo = "Deputado Federal"),
+  recursos_vereador |> mutate(cargo = "Vereador (SP)")
+) |>
+  ggplot(aes(x = ano, y = IDAR, color = cargo)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  labs(
+    title = "Índice de Desigualdade de Acesso a Recursos",
+    x = "Ano", y = "IDAR (coef. Gini)",
+    color = "Cargo",
+    caption = "Fonte: Portal da Classe Política — INCT ReDem"
+  ) +
+  theme_minimal()
+```
+
+## Filtros geográficos
+
+O argumento `uf` filtra por estado e `municipio` filtra por nome de cidade
+(busca parcial, sem distinção de maiúsculas/minúsculas). O pacote resolve
+automaticamente os nomes para os IDs internos da API.
+
+```{r}
+# Todos os vereadores do RS
+get_nepp("vereador", 2000, 2024, uf = "RS")
+
+# Vereadores de Porto Alegre
+get_nepp("vereador", 2000, 2024, uf = "RS", municipio = "Porto Alegre")
+
+# Busca parcial também funciona
+get_nepp("vereador", 2000, 2024, uf = "RS", municipio = "porto")
+```
+
+## Referências
+
+- Laakso, M., & Taagepera, R. (1979). "Effective" Number of Parties. *Comparative Political Studies*, 12(1), 3–27.
+- Pedersen, M. N. (1979). The Dynamics of European Party Systems. *European Journal of Political Research*, 7(1), 1–26.
+- Portal da Classe Política — INCT ReDem: <https://portaldaclasse.com.br>
