@@ -54,10 +54,10 @@ pdc_discovery()
 
 ```r
 # Ambiente de desenvolvimento local
-options(portalclasse.api_url = "http://localhost:3000")
+options(portalclasse.api_url = "http://redem.c3sl.ufpr.br/v1/api/")
 
 # Ou via variável de ambiente no .Renviron:
-# PORTALCLASSE_API_URL=http://localhost:3000
+# PORTALCLASSE_API_URL=http://redem.c3sl.ufpr.br/v1/api/
 ```
 
 ## Fonte
