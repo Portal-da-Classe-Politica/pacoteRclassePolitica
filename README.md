@@ -62,4 +62,4 @@ options(portalclasse.api_url = "http://localhost:3000")
 
 ## Fonte
 
-Portal da Classe Política — INCT ReDem (2025). Disponível em: <https://portaldaclasse.com.br>
+Portal da Classe Política — INCT ReDem (2025). Disponível em: <https://redem.c3sl.ufpr.br/>
