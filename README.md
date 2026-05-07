@@ -1,4 +1,4 @@
-# pacoteRclassePolitica
+# RedemR
 
 Acesso programático aos indicadores políticos e eleitorais do **Portal da Classe Política** (INCT ReDem) diretamente no R.
 
